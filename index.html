@@ -200,7 +200,12 @@
             <div id="formView" class="view-section active">
                 
                 <!-- ฟอร์มชาร์จไฟ -->
+
                 <form id="chargeForm" class="form-section active">
+                    <div class="input-group">
+                        <label><span class="material-icons-round input-icon">event</span>วันที่และเวลาที่ชาร์จ</label>
+                        <input type="datetime-local" id="charge_timestamp" required style="width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 15px; font-size: 16px; font-family: 'Kanit', sans-serif; color: var(--text-dark); background: #fafafa; outline: none;">
+                    </div>
                     <div class="input-group">
                         <label><span class="material-icons-round input-icon">place</span>ชื่อสถานี / โลเคชั่น</label>
                         <input type="text" id="charge_location" required placeholder="เช่น ปั๊ม ปตท. สาขาเจริญกรุง">
@@ -233,8 +238,20 @@
                 <!-- ฟอร์มบำรุงรักษา -->
                 <form id="maintenanceForm" class="form-section">
                     <div class="input-group">
+                        <label><span class="material-icons-round input-icon">event</span>วันที่และเวลาที่ทำรายการ</label>
+                        <input type="datetime-local" id="m_timestamp" required style="width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 15px; font-size: 16px; font-family: 'Kanit', sans-serif; color: var(--text-dark); background: #fafafa; outline: none;">
+                    </div>
+                    <div class="input-group">
                         <label><span class="material-icons-round input-icon">build</span>ประเภทการบำรุงรักษา</label>
-                        <input type="text" id="m_serviceType" required placeholder="เช่น เช็กระยะ 20,000 กม.">
+                        <select id="m_serviceType" required style="width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 15px; font-size: 16px; font-family: 'Kanit', sans-serif; color: var(--text-dark); background: #fafafa; outline: none;" onchange="checkServiceType(this.value)">
+                            <option value="" disabled selected>-- กรุณาเลือกรายการบำรุงรักษา --</option>
+                            <option value="เช็กระยะตามกำหนด">เช็กระยะตามกำหนด</option>
+                            <option value="เปลี่ยนยาง / สลับยาง">เปลี่ยนยาง / สลับยาง</option>
+                            <option value="เปลี่ยนไส้กรองแอร์">เปลี่ยนไส้กรองแอร์</option>
+                            <option value="เปลี่ยนใบปัดน้ำฝน">เปลี่ยนใบปัดน้ำฝน</option>
+                            <option value="ตรวจสอบระบบเบรก">ตรวจสอบระบบเบรก</option>
+                            <option value="อื่นๆ (ระบุในรายละเอียด)">อื่นๆ (ระบุในรายละเอียด)</option>
+                        </select>
                     </div>
                     <div class="input-group">
                         <label><span class="material-icons-round input-icon">speed</span>เลขไมล์ตอนทำรายการ (กม.)</label>
@@ -278,6 +295,15 @@
         let currentMainView = 'form';
 
         window.addEventListener('DOMContentLoaded', () => {
+            // เซ็ตค่าช่องวันที่/เวลาให้เป็นปัจจุบันตอนเปิดเว็บ
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const isoString = now.toISOString().slice(0, 16);
+            
+            document.getElementById('charge_timestamp').value = isoString;
+            document.getElementById('m_timestamp').value = isoString;
+
+            // โค้ดดึงไมล์ล่าสุด (อันเดิม)
             fetch(scriptURL + '?action=getLastOdometer')
                 .then(res => res.json())
                 .then(data => {
@@ -287,7 +313,6 @@
                     }
                 });
         });
-
         function switchMainView(view) {
             currentMainView = view;
             const formView = document.getElementById('formView');
