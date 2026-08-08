@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVOLVE - Vehicle Health Map</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7f5;
+            --primary-green: #2e7d32;
+            --accent-green: #81c784;
+            --warning-orange: #f57c00;
+            --danger-red: #d32f2f;
+            --card-bg: #ffffff;
+            --text-dark: #1b5e20;
+            --text-light: #555555;
+            --shadow: 0 8px 20px rgba(46, 125, 50, 0.1);
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .main-container { width: 100%; max-width: 420px; box-sizing: border-box; }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-green), var(--accent-green));
+            border-radius: 30px;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .app-header h1 { font-size: 28px; margin: 0; }
+        .app-header p { font-size: 14px; opacity: 0.9; margin: 5px 0 0; }
+
+        /* Nav Bar สไตล์กระจกใส */
+        .nav-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.35);
+            padding: 6px;
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 8px 4px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+            font-family: 'Kanit', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-light);
+            border-radius: 14px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-green);
+            color: white;
+            border: 1px solid transparent;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        h2 { font-size: 17px; color: var(--text-dark); margin-top: 0; display: flex; align-items: center; gap: 8px; }
+
+        /* Vehicle Health Map Simulation */
+        .car-map-container {
+            position: relative;
+            background: linear-gradient(180deg, #e8f5e9 0%, #f1f8f2 100%);
+            border-radius: 20px;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--accent-green);
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .car-silhouette {
+            font-size: 90px;
+            color: #c8e6c9;
+            user-select: none;
+        }
+
+        /* Hotspots บนตัวรถ */
+        .hotspot {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .hotspot:hover { transform: scale(1.15); }
+
+        .status-ok { background: var(--primary-green); }
+        .status-warn { background: var(--warning-orange); animation: pulse 1.5s infinite; }
+        .status-danger { background: var(--danger-red); animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 124, 0, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 124, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 124, 0, 0); }
+        }
+
+        /* ตำแหน่งของจุด Hotspots ต่างๆ บนรถ */
+        .hs-adas { top: 20px; left: 50%; transform: translateX(-50%); }
+        .hs-battery { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .hs-motor { top: 35px; left: 50%; transform: translateX(-50%); display:none; } /* ปรับตามโครงสร้างได้ */
+        .hs-tire-fl { top: 55px; left: 35px; }
+        .hs-tire-fr { top: 55px; right: 35px; }
+        .hs-tire-rl { bottom: 55px; left: 35px; }
+        .hs-tire-rr { bottom: 55px; right: 35px; }
+
+        /* แผงแสดงรายละเอียดเมื่อคลิกจุดตรวจเช็ก */
+        .component-detail {
+            background: #f9faf9;
+            border-radius: 15px;
+            padding: 12px 15px;
+            font-size: 13px;
+            border-left: 4px solid var(--primary-green);
+            color: var(--text-light);
+        }
+
+        .component-detail b { color: var(--text-dark); }
+
+        /* รายการ Anomaly Timeline Feed */
+        .alert-item {
+            background: #fff8f6;
+            border: 1px solid #ffccbc;
+            border-left: 4px solid var(--warning-orange);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .alert-item.danger {
+            background: #fef7f7;
+            border-color: #ffcdd2;
+            border-left-color: var(--danger-red);
+        }
+
+        .alert-header { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 4px; color: var(--text-dark); }
+        .ai-badge {
+            background: #e3f2fd;
+            color: #1565c0;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="app-header">
+            <h1>EVOLVE</h1>
+            <p>แผนผังสุขภาพรถยนต์และระบบตรวจจับความผิดปกติ</p>
+        </div>
+
+        <!-- แถบเมนูด้านบน -->
+        <div class="nav-bar">
+            <a href="index.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">dashboard</span>หน้าแรก</a>
+            <a href="charge.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">bolt</span>ชาร์จไฟ</a>
+            <a href="maintenance.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">build</span>บำรุงรักษา</a>
+            <a href="anomaly.html" class="nav-btn active"><span class="material-icons-round" style="font-size: 16px;">health_and_safety</span>Health Map</a>
+        </div>
+
+        <!-- Interactive Vehicle Health Map Card -->
+        <div class="card">
+            <h2><span class="material-icons-round" style="color: var(--primary-green);">directions_car</span> แผนผังสุขภาพรถแบบเรียลไทม์</h2>
+            <p style="font-size: 12px; color: var(--text-light); margin-bottom: 15px;">แตะที่จุดบนตัวรถเพื่อดูสถานะและการวิเคราะห์ของเซ็นเซอร์แต่ละจุด</p>
+            
+            <div class="car-map-container">
+                <!-- จำลองรูปตัวถังรถมองจากด้านบน -->
+                <span class="material-icons-round car-silhouette">local_taxi</span>
+                
+                <!-- จุดฮอตสปอตต่างๆ -->
+                <div class="hotspot status-ok hs-adas" onclick="showDetail('ADAS & เซ็นเซอร์รอบคัน', 'ปกติ', 'เซ็นเซอร์อัลตราโซนิกและกล้องทำงานสมบูรณ์ 100% ไม่มีคราบสกปรกบดบัง')">
+                    <span class="material-icons-round" style="font-size: 14px;">radar</span>
+                </div>
+                <div class="hotspot status-ok hs-battery" onclick="showDetail('ชุดแบตเตอรี่แรงดันสูง & Inverter', 'ปกติ (SOH 98%)', 'อุณหภูมิมอเตอร์ปกติ (38°C) การกระจายความร้อนสมดุลดีเยี่ยม')">
+                    <span class="material-icons-round" style="font-size: 14px;">bolt</span>
+                </div>
+                <div class="hotspot status-warn hs-tire-fl" onclick="showDetail('ล้อหน้าซ้าย (FL)', 'ต้องระวัง (ลมยางอ่อน)', 'แรงดันลมยาง 31 PSI ต่ำกว่าค่ามาตรฐานเล็กน้อย (แนะนำเติม 35 PSI)')">
+                    <span class="material-icons-round" style="font-size: 14px;">tire_repair</span>
+                </div>
+                <div class="hotspot status-ok hs-tire-fr" onclick="showDetail('ล้อหน้าขวา (FR)', 'ปกติ', 'แรงดันลมยาง 35 PSI สมดุลดี')">
+                    <span class="material-icons-round" style="font-size: 14px;">tire_repair</span>
+                </div>
+                <div class="hotspot status-ok hs-tire-rl" onclick="showDetail('ล้อหลังซ้าย (RL)', 'ปกติ', 'แรงดันลมยาง 35 PSI สมดุลดี')">
+                    <span class="material-icons-round" style="font-size: 14px;">tire_repair</span>
+                </div>
+                <div class="hotspot status-ok hs-tire-rr" onclick="showDetail('ล้อหลังขวา (RR)', 'ปกติ', 'แรงดันลมยาง 35 PSI สมดุลดี')">
+                    <span class="material-icons-round" style="font-size: 14px;">tire_repair</span>
+                </div>
+            </div>
+
+            <!-- กล่องแสดงข้อมูลเมื่อคลิกจุด -->
+            <div id="detailBox" class="component-detail">
+                💡 <b>คำแนะนำ:</b> แตะที่หมุดสีบนรถเพื่อตรวจสอบสถานะเชิงลึกของชิ้นส่วนนั้นๆ
+            </div>
+        </div>
+
+        <!-- AI Root Cause Analysis & Anomaly Alerts -->
+        <div class="card">
+            <h2><span class="material-icons-round" style="color: var(--warning-orange);">notification_important</span> บันทึกแจ้งเตือนความผิดปกติ (AI Feed)</h2>
+            
+            <div class="alert-item">
+                <div class="alert-header">
+                    <span>⚠️ แรงดันลมยางหน้าซ้ายลดลง</span>
+                    <span style="font-size: 11px; color: #888;">เมื่อวานนี้</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-light);">ตรวจพบอัตราการใช้พลังงานสูงขึ้น 4.2% เนื่องจากแรงดันลมยางลดลงต่ำกว่าเกณฑ์ Confidence Interval</div>
+                <div class="ai-badge">🤖 AI Root Cause: เติมลมยางเพิ่ม 4 PSI เพื่อคืนค่าประหยัดพลังงานปกติ</div>
+            </div>
+
+            <div class="alert-item danger" style="display: none;">
+                <div class="alert-header">
+                    <span>🚨 อุณหภูมิอินเวอร์เตอร์สูงผิดปกติ</span>
+                    <span style="font-size: 11px; color: #888;">3 วันก่อน</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-light);">อุณหภูมิพุ่งสูงกว่าค่าเฉลี่ยสถิติในช่วงใช้ความเร็วสูงต่อเนื่อง</div>
+                <div class="ai-badge" style="background:#ffebee; color:#c62828;">🤖 AI Root Cause: ตรวจสอบระบบระบายความร้อน / ปั๊มน้ำยาหล่อเย็น</div>
+            </div>
+
+            <p style="text-align: center; font-size: 12px; color: #888; margin-top: 10px;">ระบบสถิติตรวจสอบความปลอดภัยทำงานสมบูรณ์</p>
+        </div>
+
+    </div>
+
+    <script>
+        // ฟังก์ชันแสดงผลข้อมูลเมื่อกดปุ่มบนแผนผังรถ
+        function showDetail(componentName, status, description) {
+            const detailBox = document.getElementById('detailBox');
+            let colorStyle = 'var(--primary-green)';
+            if(status.includes('ระวัง')) colorStyle = 'var(--warning-orange)';
+            if(status.includes('อันตราย')) colorStyle = 'var(--danger-red)';
+
+            detailBox.style.borderLeftColor = colorStyle;
+            detailBox.innerHTML = `
+                <b>🔍 ชิ้นส่วน:</b> ${componentName}<br>
+                <b>📌 สถานะ:</b> <span style="color: ${colorStyle}; font-weight: 600;">${status}</span><br>
+                <b>📝 รายละเอียดเชิงลึก:</b> ${description}
+            `;
+        }
+    </script>
+</body>
+</html>

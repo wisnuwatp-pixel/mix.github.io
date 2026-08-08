@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Analytics & Impact Dashboard</title>
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <!-- Chart.js สำหรับทำกราฟ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #0ea5e9;
+            --success: #10b981;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kanit', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; padding-bottom: 40px; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .header h1 { font-size: 22px; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .back-btn { background: #e2e8f0; border: none; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-family: 'Kanit'; text-decoration: none; color: var(--primary); font-size: 14px; display: flex; align-items: center; gap: 4px; }
+        
+        /* Filter Section */
+        .filter-card { background: var(--card-bg); padding: 16px 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; }
+        .filter-group { display: flex; align-items: center; gap: 8px; }
+        .filter-group label { font-size: 14px; color: var(--text-light); }
+        .filter-group input, .filter-group select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Kanit'; font-size: 14px; outline: none; }
+
+        /* KPI Cards Grid */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 24px; }
+        .kpi-card { background: var(--card-bg); padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid var(--accent); }
+        .kpi-card.green { border-left-color: var(--success); }
+        .kpi-title { font-size: 13px; color: var(--text-light); margin-bottom: 6px; }
+        .kpi-value { font-size: 24px; font-weight: 600; color: var(--primary); }
+        .kpi-unit { font-size: 14px; font-weight: normal; color: var(--text-light); margin-left: 4px; }
+
+        /* Chart Section */
+        .chart-card { background: var(--card-bg); padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 24px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .chart-header h3 { font-size: 16px; font-weight: 500; color: var(--primary); }
+        
+        .loading { text-align: center; padding: 40px; color: var(--text-light); font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1><span class="material-icons-round" style="color: var(--accent);">analytics</span> EV Intelligence Dashboard</h1>
+        <a href="index.html" class="back-btn"><span class="material-icons-round" style="font-size: 18px;">arrow_back</span> กลับหน้าบันทึก</a>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-card">
+        <div class="filter-group">
+            <label>ช่วงเวลา:</label>
+            <input type="date" id="startDate">
+            <span>ถึง</span>
+            <input type="date" id="endDate">
+        </div>
+        <div class="filter-group">
+            <label>ช่วงระยะกราฟสิ้นเปลือง:</label>
+            <select id="intervalSelect" onchange="updateChartData()">
+                <option value="10">ทุกๆ 10 กม.</option>
+                <option value="50">ทุกๆ 50 กม.</option>
+                <option value="100" selected>ทุกๆ 100 กม.</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading">กำลังประมวลผลข้อมูลเชิงลึก...</div>
+
+    <!-- Main Dashboard Content (ซ่อนไว้ก่อนจนกว่าจะโหลดเสร็จ) -->
+    <div id="dashboardContent" style="display: none;">
+        
+        <!-- KPI Summary Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-title">ระยะทางรวมทั้งหมด</div>
+                <div class="kpi-value" id="kpiTotalDist">0<span class="kpi-unit">กม.</span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">อัตราสิ้นเปลืองเฉลี่ย</div>
+                <div class="kpi-value" id="kpiAvgEfficiency">0.00<span class="kpi-unit">kWh/กม.</span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">ค่าใช้จ่ายเฉลี่ย</div>
+                <div class="kpi-value" id="kpiAvgCost">0.00<span class="kpi-unit">บาท/กม.</span></div>
+            </div>
+            <div class="kpi-card green">
+                <div class="kpi-title">🌱 ลด CO2 ได้ (เทียบรถน้ำมัน)</div>
+                <div class="kpi-value" id="kpiCo2">0.0<span class="kpi-unit">กก.</span></div>
+            </div>
+        </div>
+
+        <!-- Chart 1: Efficiency Trend -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 id="chartTitle">กราฟอัตราสิ้นเปลืองพลังงาน (kWh / ระยะทางที่เลือก)</h3>
+            </div>
+            <canvas id="efficiencyChart" height="110"></canvas>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // แทนที่ด้วย URL ของ Web App Google Apps Script ของคุณ
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyYmQvXMvscXow8RKurwkf8qrEM9awDwQD9fQ3dymNGV3dQxQ6CKUr3HX1J1bBlUSUj/exec';
+    let rawData = [];
+    let myChart = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        fetchDataAndRender();
+    });
+
+    function fetchDataAndRender() {
+        fetch(scriptURL + '?action=getChargeLog')
+            .then(res => res.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    rawData = result.data; // ข้อมูลที่เรียงจากใหม่ไปเก่า หรือเก่าไปใหม่
+                    processDashboard();
+                } else {
+                    document.getElementById('loadingState').innerText = 'ไม่พบข้อมูลการชาร์จ';
+                }
+            })
+            .catch(err => {
+                document.getElementById('loadingState').innerText = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+            });
+    }
+
+    function processDashboard() {
+        if (!rawData || rawData.length === 0) {
+            document.getElementById('loadingState').innerText = 'ยังไม่มีข้อมูลเพียงพอสำหรับสร้างรายงาน';
+            return;
+        }
+
+        // ซ่อนข้อความโหลด แสดง Dashboard
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('dashboardContent').style.display = 'block';
+
+        // จัดเรียงข้อมูลจาก น้อยไปมาก (ตามเลขไมล์หรือวันที่) เพื่อคำนวณช่วงระยะทาง
+        let sorted = [...rawData].sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+        // คำนวณ KPI ภาพรวม
+        let totalEnergy = 0;
+        let totalCost = 0;
+        let minOdo = parseFloat(sorted[0][2]) || 0;
+        let maxOdo = parseFloat(sorted[sorted.length - 1][2]) || minOdo;
+        let totalDist = Math.max(0, maxOdo - minOdo);
+
+        sorted.forEach(row => {
+            totalEnergy += parseFloat(row[5]) || 0; // kWh คอลัมน์ 5
+            totalCost += parseFloat(row[6]) || 0;   // Cost คอลัมน์ 6
+        });
+
+        let avgEff = totalDist > 0 ? (totalEnergy / totalDist).toFixed(2) : 0;
+        let avgCostPerKm = totalDist > 0 ? (totalCost / totalDist).toFixed(2) : 0;
+
+        // นวัตกรรมคำนวณ CO2 Savings
+        // สมมติฐาน: รถใช้น้ำมันปล่อย CO2 เฉลี่ย ~0.19 กก. ต่อกม., EV ปล่อยทางอ้อม (Power grid) ~0.08 กก. ต่อกม. ส่วนต่างประหยัดได้ ~0.11 กก./กม. 
+        // หรือคำนวณจากพลังงานไฟฟ้าที่ใช้เทียบกับน้ำมันเบนซิน 1 ลิตร วิ่งได้ ~12 กม. และปล่อย CO2 ~2.3 กก./ลิตร
+        let co2SavedKg = (totalDist * 0.11).toFixed(1); 
+
+        // แสดงผลลง KPI Cards
+        document.getElementById('kpiTotalDist').innerHTML = `${totalDist.toLocaleString()}<span class="kpi-unit">กม.</span>`;
+        document.getElementById('kpiAvgEfficiency').innerHTML = `${avgEff}<span class="kpi-unit">kWh/กม.</span>`;
+        document.getElementById('kpiAvgCost').innerHTML = `${avgCostPerKm}<span class="kpi-unit">บาท/กม.</span>`;
+        document.getElementById('kpiCo2').innerHTML = `${co2SavedKg}<span class="kpi-unit">กก.</span>`;
+
+        updateChartData();
+    }
+
+   function updateChartData() {
+        const interval = parseInt(document.getElementById('intervalSelect').value) || 100;
+        document.getElementById('chartTitle').innerText = `แนวโน้มอัตราสิ้นเปลืองพลังงาน (Interpolated Trend)`;
+
+        let sorted = [...rawData].sort((a, b) => (parseFloat(a[2]) || 0) - (parseFloat(b[2]) || 0));
+        if (sorted.length === 0) return;
+
+        // 1. สร้างจุดข้อมูลดิบที่มีอยู่
+        let points = sorted.map(row => ({
+            odo: parseFloat(row[2]),
+            energy: parseFloat(row[5]) || 0
+        }));
+
+        // 2. สร้าง Grid ตาม Interval
+        let minOdo = Math.floor(points[0].odo / interval) * interval;
+        let maxOdo = Math.ceil(points[points.length - 1].odo / interval) * interval;
+        
+        let labels = [];
+        let dataPoints = [];
+
+        // 3. ใช้ Linear Interpolation
+        for (let currentOdo = minOdo; currentOdo <= maxOdo; currentOdo += interval) {
+            labels.push(`${currentOdo}`);
+            
+            // หาจุดสองจุดที่ขนาบข้าง (ก่อนและหลัง) เพื่อคำนวณ Slope
+            let prev = points.filter(p => p.odo <= currentOdo).pop();
+            let next = points.find(p => p.odo >= currentOdo);
+
+            if (prev && next && prev !== next) {
+                // สูตร: y = y1 + (x - x1) * (y2 - y1) / (x2 - x1)
+                let interpolated = prev.energy + (currentOdo - prev.odo) * (next.energy - prev.energy) / (next.odo - prev.odo);
+                dataPoints.push(parseFloat(interpolated.toFixed(2)));
+            } else if (prev) {
+                dataPoints.push(prev.energy); // ถ้าไม่มีจุดถัดไป ใช้ค่าล่าสุด
+            } else {
+                dataPoints.push(next.energy); // ถ้าไม่มีจุดก่อนหน้า ใช้ค่าแรก
+            }
+        }
+
+        renderCurveChart(labels, dataPoints);
+    }
+
+    function renderCurveChart(labels, data) {
+        const ctx = document.getElementById('efficiencyChart').getContext('2d');
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
+            type: 'line', // เปลี่ยนเป็น Line Chart เพื่อให้เห็นเป็น Curve
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'แนวโน้มการสิ้นเปลือง (kWh)',
+                    data: data,
+                    borderColor: '#0ea5e9',
+                    backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                    fill: true,
+                    tension: 0.4, // ปรับความโค้งของเส้น (0.4 คือค่ามาตรฐานที่สวยงาม)
+                    pointRadius: 4,
+                    pointBackgroundColor: '#0ea5e9'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { title: { display: true, text: 'เลขไมล์ (กม.)' } }
+                }
+            }
+        });
+    }
+
+    // ฟังก์ชันช่วยวาดกราฟที่รองรับการเปลี่ยนสีแยกแต่ละแท่งได้
+    function renderCustomChart(labels, data, bgColors, borderColors) {
+        const ctx = document.getElementById('efficiencyChart').getContext('2d');
+        
+        if (myChart) {
+            myChart.destroy();
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'พลังงาน (kWh) [สีเทา = ค่าเฉลี่ยประมาณการ]',
+                    data: data,
+                    backgroundColor: bgColors,
+                    borderColor: borderColors,
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    function renderChart(labels, data) {
+        const ctx = document.getElementById('efficiencyChart').getContext('2d');
+        
+        if (myChart) {
+            myChart.destroy();
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'bar', // เปลี่ยนเป็น 'line' หรือ 'bar' ตามชอบ
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'พลังงานที่ใช้ (kWh)',
+                    data: data,
+                    backgroundColor: 'rgba(14, 165, 233, 0.6)',
+                    borderColor: '#0ea5e9',
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

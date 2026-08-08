@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EVOLVE - Sustainable EV Logger</title>
+    <title>EVOLVE - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f4f7f5;
-            --primary-green: #2e7d32;
-            --accent-green: #81c784;
-            --card-bg: #ffffff;
-            --text-dark: #1b5e20;
-            --text-light: #666666;
-            --shadow: 0 8px 20px rgba(46, 125, 50, 0.1);
+            --bg-color: #f4f7f5;       /* สีพื้นหลังภาพรวมของหน้าจอ */
+            --primary-green: #2e7d32;  /* สีหลัก เช่น แบนเนอร์หัวข้อ, ปุ่มที่เลือก (Active), ปุ่มบันทึก */
+            --accent-green: #81c784;   /* สีเน้นขอบ หรือไอคอนตกแต่ง */
+            --card-bg: #ffffff;        /* สีพื้นหลังของการ์ดเนื้อหา */
+            --text-dark: #1b5e20;      /* สีตัวหนังสือหลัก/หัวข้อ */
+            --text-light: #555555;     /* สีตัวหนังสือรอง หรือข้อความปุ่มเมนูที่ไม่ได้เลือก */
+            --shadow: 0 8px 20px rgba(46, 125, 50, 0.1); /* สีเงาของกล่องการ์ด */
         }
 
         body {
@@ -27,14 +27,11 @@
             min-height: 100vh;
         }
 
-        .main-container {
-            width: 100%;
-            max-width: 420px;
-        }
+        .main-container { width: 100%; max-width: 420px; }
 
         .app-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding: 20px;
             background: linear-gradient(135deg, var(--primary-green), var(--accent-green));
             border-radius: 30px;
@@ -42,389 +39,157 @@
             box-shadow: var(--shadow);
         }
 
-        .app-header h1 { font-size: 28px; font-weight: 600; margin: 0; letter-spacing: 1px; }
+        .app-header h1 { font-size: 28px; margin: 0; }
         .app-header p { font-size: 14px; opacity: 0.9; margin: 5px 0 0; }
-        .car-icon { font-size: 45px !important; margin-bottom: 5px; }
 
-        /* เมนูย่อยสลับประเภท (ชาร์จไฟ / บำรุงรักษา) อยู่ด้านบนสุดเดี่ยวๆ */
-        .tab-menu {
+        /* แถบสลับหน้าสไตล์ iOS Glass ใสๆ มีกรอบบางๆ และปุ่มโปร่งแสง */
+        .nav-bar {
             display: flex;
-            background: #e0e8e2;
-            border-radius: 15px;
-            padding: 4px;
+            gap: 6px;
+            margin-bottom: 20px;
+            background: rgba(126, 121, 121, 0.35);
+            padding: 6px;
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.4); /* กรอบบางๆ สำหรับปุ่มที่ยังไม่ได้กด */
+            background: rgba(255, 255, 255, 0.2);
+            font-family: 'Kanit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            border-radius: 14px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-green);
+            color: white;
+            border: 1px solid transparent;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+        }
+        
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
             margin-bottom: 20px;
         }
 
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: transparent;
-            font-family: 'Kanit', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-light);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .forecast-card {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border: 2px solid var(--accent-green);
         }
 
-        .tab-btn.active {
-            background: var(--card-bg);
-            color: var(--primary-green);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 30px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .view-section { display: none; }
-        .view-section.active { display: block; }
-        .form-section { display: none; }
-        .form-section.active { display: block; }
-
-        .input-group {
-            margin-bottom: 18px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .input-icon { color: var(--accent-green); font-size: 20px !important; }
-
-        /* ตัด padding ซ้ายออกเพราะเอาไอคอนในช่องพิมพ์ออกแล้ว */
-        .input-group input, .input-group textarea {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 15px;
-            font-size: 16px;
-            font-family: 'Kanit', sans-serif;
-            color: var(--text-dark);
-            box-sizing: border-box;
-            background: #fafafa;
-            outline: none;
-        }
-
-        .input-group textarea { resize: vertical; height: 80px; }
-        .input-group input::placeholder { color: #b0bec5; font-weight: 300; }
-        .input-group input:focus, .input-group textarea:focus { border-color: var(--primary-green); background: #fff; }
-
-        .submit-btn {
-            width: 100%;
-            padding: 16px;
-            background: var(--primary-green);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-size: 16px;
-            font-weight: 600;
-            font-family: 'Kanit', sans-serif;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        /* ปุ่มดูประวัติย้อนหลังแบบโปร่งใส อยู่ด้านล่างฟอร์ม */
-        .history-toggle-btn {
-            width: 100%;
-            padding: 12px;
-            background: transparent;
-            color: var(--text-light);
-            border: 2px dashed #b0bec5;
-            border-radius: 15px;
-            font-size: 14px;
-            font-weight: 600;
-            font-family: 'Kanit', sans-serif;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .history-toggle-btn:hover {
-            border-color: var(--primary-green);
-            color: var(--primary-green);
-            background: #f1f8f2;
-        }
-
-        /* ดีไซน์รายการประวัติย้อนหลัง */
+        h2 { font-size: 18px; color: var(--text-dark); margin-top: 0; }
+        
         .log-item {
             background: #f9faf9;
-            border: 1px solid #e2e8e4;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 12px;
+            border-left: 4px solid var(--accent-green);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 0 10px 10px 0;
             font-size: 13px;
         }
-        .log-item b { color: var(--primary-green); }
-        .log-date { font-size: 11px; color: #888; margin-bottom: 5px; }
+
+        .report-shortcut-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid rgba(46, 125, 50, 0.15);
+        }
+        .report-shortcut-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(46, 125, 50, 0.15);
+        }
     </style>
 </head>
 <body>
-
     <div class="main-container">
         <div class="app-header">
-            <span class="material-icons-round car-icon">electric_car</span>
             <h1>EVOLVE</h1>
-            <p>ระบบบันทึกข้อมูลรถไฟฟ้าอัจฉริยะ</p>
+            <p>ระบบจัดการรถยนต์ไฟฟ้าอัจฉริยะ</p>
         </div>
 
-        <!-- เมนูสลับประเภท (ชาร์จไฟ / บำรุงรักษา) -->
-        <div class="tab-menu" id="topTabMenu">
-            <button class="tab-btn active" onclick="switchType('charge')">⚡ ชาร์จไฟ</button>
-            <button class="tab-btn" onclick="switchType('maintenance')">🛠️ บำรุงรักษา</button>
+        <div class="nav-bar">
+            <a href="index.html" class="nav-btn active"><span class="material-icons-round" style="font-size: 16px;">dashboard</span> หน้าแรก</a>
+            <a href="charge.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">bolt</span> ชาร์จไฟ</a>
+            <a href="maintenance.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">build</span> บำรุงรักษา</a>
         </div>
 
-        <div class="card">
-            <!-- 1. ส่วนของฟอร์มบันทึกข้อมูล -->
-            <div id="formView" class="view-section active">
-                
-                <!-- ฟอร์มชาร์จไฟ -->
-
-                <form id="chargeForm" class="form-section active">
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">event</span>วันที่และเวลาที่ชาร์จ</label>
-                        <input type="datetime-local" id="charge_timestamp" required style="width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 15px; font-size: 16px; font-family: 'Kanit', sans-serif; color: var(--text-dark); background: #fafafa; outline: none;">
-                    </div>
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">place</span>ชื่อสถานี / โลเคชั่น</label>
-                        <input type="text" id="charge_location" required placeholder="เช่น ปั๊ม ปตท. สาขาเจริญกรุง">
-                    </div>
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">speed</span>เลขไมล์สะสมปัจจุบัน (กม.)</label>
-                        <input type="number" id="charge_odometer" required placeholder="กำลังโหลด..." inputmode="numeric">
-                    </div>
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">local_offer</span>อัตราค่าชาร์จ (บาท/kWh)</label>
-                        <input type="number" id="charge_rate" step="0.25" placeholder="เช่น 6.50" inputmode="decimal">
-                    </div>
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">battery_charging_full</span>แบตเตอรี่หลังชาร์จ (%)</label>
-                        <input type="number" id="charge_battery" required placeholder="เช่น 80" min="0" max="100" inputmode="numeric">
-                    </div>
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">bolt</span>ปริมาณไฟฟ้าที่ชาร์จ (kWh)</label>
-                        <input type="number" id="charge_energy" required placeholder="เช่น 45.5" step="0.1" inputmode="decimal">
-                    </div>
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">payments</span>ค่าใช้จ่ายทั้งหมด (บาท)</label>
-                        <input type="number" id="charge_cost" required placeholder="เช่น 250" step="0.25" inputmode="numeric">
-                    </div>
-                    <button type="submit" class="submit-btn" id="chargeBtn">
-                        <span class="material-icons-round">save</span> บันทึกข้อมูลการชาร์จ
-                    </button>
-                </form>
-
-                <!-- ฟอร์มบำรุงรักษา -->
-                <form id="maintenanceForm" class="form-section">
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">event</span>วันที่และเวลาที่ทำรายการ</label>
-                        <input type="datetime-local" id="m_timestamp" required style="width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 15px; font-size: 16px; font-family: 'Kanit', sans-serif; color: var(--text-dark); background: #fafafa; outline: none;">
-                    </div>
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">build</span>ประเภทการบำรุงรักษา</label>
-                        <select id="m_serviceType" required style="width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 15px; font-size: 16px; font-family: 'Kanit', sans-serif; color: var(--text-dark); background: #fafafa; outline: none;" onchange="checkServiceType(this.value)">
-                            <option value="" disabled selected>-- กรุณาเลือกรายการบำรุงรักษา --</option>
-                            <option value="เช็กระยะตามกำหนด">เช็กระยะตามกำหนด</option>
-                            <option value="เปลี่ยนยาง / สลับยาง">เปลี่ยนยาง / สลับยาง</option>
-                            <option value="เปลี่ยนไส้กรองแอร์">เปลี่ยนไส้กรองแอร์</option>
-                            <option value="เปลี่ยนใบปัดน้ำฝน">เปลี่ยนใบปัดน้ำฝน</option>
-                            <option value="ตรวจสอบระบบเบรก">ตรวจสอบระบบเบรก</option>
-                            <option value="อื่นๆ (ระบุในรายละเอียด)">อื่นๆ (ระบุในรายละเอียด)</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">speed</span>เลขไมล์ตอนทำรายการ (กม.)</label>
-                        <input type="number" id="m_odometer" required placeholder="กำลังโหลด..." inputmode="numeric">
-                    </div>
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">description</span>รายละเอียดเพิ่มเติม</label>
-                        <textarea id="m_details" placeholder="เช่น เปลี่ยนยาง 4 เส้น"></textarea>
-                    </div>
-                    <div class="input-group">
-                        <label><span class="material-icons-round input-icon">payments</span>ค่าใช้จ่ายทั้งหมด (บาท)</label>
-                        <input type="number" id="m_cost" required placeholder="เช่น 4500" step="0.25" inputmode="numeric">
-                    </div>
-                    <button type="submit" class="submit-btn" id="mBtn">
-                        <span class="material-icons-round">save</span> บันทึกการบำรุงรักษา
-                    </button>
-                </form>
-
-                <!-- ปุ่มย้ายมาด้านล่าง สไตล์โปร่งใส มินิมอล -->
-                <button class="history-toggle-btn" onclick="switchMainView('history')">
-                    <span class="material-icons-round">history</span> ดูประวัติย้อนหลัง
-                </button>
-            </div>
-
-            <!-- 2. ส่วนของประวัติย้อนหลัง -->
-            <div id="historyView" class="view-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: var(--text-dark); font-size: 16px;">📜 ประวัติย้อนหลัง</h3>
-                    <button class="history-toggle-btn" style="width: auto; margin: 0; padding: 6px 12px; font-size: 12px;" onclick="switchMainView('form')">
-                        <span class="material-icons-round" style="font-size: 16px;">arrow_back</span> กลับหน้าบันทึก
-                    </button>
+        <div class="card forecast-card">
+            <h2>🔮 ประมาณการการชาร์จครั้งถัดไป</h2>
+            <div id="forecastContent">กำลังวิเคราะห์ข้อมูล...</div>
+        </div>
+        <div class="card report-shortcut-card" onclick="location.href='report.html'" style="cursor: pointer;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h2>📊 รายงานและสถิติภาพรวม</h2>
+                    <p style="font-size: 13px; color: var(--text-light); margin: 5px 0 0;">คลิกเพื่อดูสรุปค่าใช้จ่ายและพลังงานทั้งหมด</p>
                 </div>
-                <div id="historyList">กำลังโหลดข้อมูลประวัติ...</div>
+                <span class="material-icons-round" style="font-size: 32px; color: var(--primary-green);">chevron_right</span>
             </div>
         </div>
-    </div>
+        <div class="card">
+            <h2>📜 ประวัติการชาร์จล่าสุด (3 รายการ)</h2>
+            <div id="historyList">กำลังโหลด...</div>
+        </div>
+        <div class="nav-bar">
+            <a href="anomaly.html" class="nav-btn active"><span class="material-icons-round" style="font-size: 16px;">bolt</span> Anomaly Alert</a>
+            <a href="track_test.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">map</span> Tracking..</a>
+            <a href="manage_stations.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">ev_station</span> Manage Stations</a>
+
+        </div>
+
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyYmQvXMvscXow8RKurwkf8qrEM9awDwQD9fQ3dymNGV3dQxQ6CKUr3HX1J1bBlUSUj/exec';
-        let currentType = 'charge'; 
-        let currentMainView = 'form';
 
-        window.addEventListener('DOMContentLoaded', () => {
-            // เซ็ตค่าช่องวันที่/เวลาให้เป็นปัจจุบันตอนเปิดเว็บ
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            const isoString = now.toISOString().slice(0, 16);
+        window.addEventListener('DOMContentLoaded', async () => {
+            const res = await fetch(scriptURL + '?action=getChargeLog');
+            const data = await res.json();
             
-            document.getElementById('charge_timestamp').value = isoString;
-            document.getElementById('m_timestamp').value = isoString;
-
-            // โค้ดดึงไมล์ล่าสุด (อันเดิม)
-            fetch(scriptURL + '?action=getLastOdometer')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success' && data.lastOdometer) {
-                        document.getElementById('charge_odometer').placeholder = `ล่าสุด: ${data.lastOdometer} กม.`;
-                        document.getElementById('m_odometer').placeholder = `ล่าสุด: ${data.lastOdometer} กม.`;
-                    }
+            if (data.status === 'success' && data.data.length > 0) {
+                const sortedLogs = [...data.data].sort((a, b) => new Date(b[0]) - new Date(a[0]));
+                const latestLogs = sortedLogs.slice(0, 3);
+                
+                let html = '';
+                latestLogs.forEach(row => {
+                    html += `<div class="log-item">📅 ${new Date(row[0]).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}<br>📍 ${row[1]} | ⚡ ${row[5]} kWh</div>`;
                 });
-        });
-        function switchMainView(view) {
-            currentMainView = view;
-            const formView = document.getElementById('formView');
-            const historyView = document.getElementById('historyView');
-            const topTabMenu = document.getElementById('topTabMenu');
+                document.getElementById('historyList').innerHTML = html;
 
-            if (view === 'form') {
-                formView.classList.add('active');
-                historyView.classList.remove('active');
-                topTabMenu.style.display = 'flex'; // แสดงเมนูชาร์จ/ซ่อมตอนอยู่หน้าฟอร์ม
+                const lastDate = new Date(latestLogs[0][0]);
+                const nextDate = new Date(lastDate);
+                nextDate.setDate(nextDate.getDate() + 7);
+                
+                document.getElementById('forecastContent').innerHTML = `
+                    <p style="font-size: 14px;">จากพฤติกรรมการชาร์จล่าสุด คุณควรเตรียมชาร์จอีกครั้งประมาณ:</p>
+                    <b style="font-size: 20px;">${nextDate.toLocaleDateString('th-TH', {weekday: 'long', day: 'numeric', month: 'long'})}</b>
+                `;
             } else {
-                formView.classList.remove('active');
-                historyView.classList.add('active');
-                topTabMenu.style.display = 'none'; // ซ่อนตอนดูประวัติเพื่อให้หน้าจอสะอาดขึ้น
-                loadHistoryData(); 
+                document.getElementById('historyList').innerHTML = '<p style="text-align:center; color:#888; font-size:13px;">ยังไม่มีประวัติการชาร์จ</p>';
+                document.getElementById('forecastContent').innerHTML = '<p style="font-size: 14px;">ยังไม่มีข้อมูลเพียงพอสำหรับการพยากรณ์</p>';
             }
-        }
-
-        function switchType(type) {
-            currentType = type;
-            const typeBtns = document.querySelectorAll('.tab-btn');
-            typeBtns.forEach(b => b.classList.remove('active'));
-
-            if (type === 'charge') {
-                typeBtns[0].classList.add('active');
-                document.getElementById('chargeForm').classList.add('active');
-                document.getElementById('maintenanceForm').classList.remove('active');
-            } else {
-                typeBtns[1].classList.add('active');
-                document.getElementById('chargeForm').classList.remove('active');
-                document.getElementById('maintenanceForm').classList.add('active');
-            }
-        }
-
-        function loadHistoryData() {
-            const historyList = document.getElementById('historyList');
-            historyList.innerHTML = 'กำลังโหลดข้อมูล...';
-
-            const action = (currentType === 'charge') ? 'getChargeLog' : 'getMaintenanceLog';
-
-            fetch(scriptURL + '?action=' + action)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success' && data.data.length > 0) {
-                        let html = '';
-                        data.data.forEach(row => {
-                            let dateStr = new Date(row[0]).toLocaleString('th-TH');
-                            if (currentType === 'charge') {
-                                html += `<div class="log-item">
-                                    <div class="log-date">📅 ${dateStr}</div>
-                                    📍 สถานี: <b>${row[1]}</b><br>
-                                    🚗 ไมล์: ${row[2]} กม. | 🔋 แบต: ${row[4]}%<br>
-                                    ⚡ พลังงาน: ${row[5]} kWh | 💰 จ่าย: <b>${row[6]} บาท</b>
-                                </div>`;
-                            } else {
-                                html += `<div class="log-item">
-                                    <div class="log-date">📅 ${dateStr}</div>
-                                    🛠️ บริการ: <b>${row[1]}</b><br>
-                                    🚗 ไมล์: ${row[2]} กม.<br>
-                                    📝 รายละเอียด: ${row[3]}<br>
-                                    💰 จ่าย: <b>${row[4]} บาท</b>
-                                </div>`;
-                            }
-                        });
-                        historyList.innerHTML = html;
-                    } else {
-                        historyList.innerHTML = '<p style="text-align:center; color:#888;">ยังไม่มีประวัติการบันทึก</p>';
-                    }
-                })
-                .catch(err => {
-                    historyList.innerHTML = '<p style="text-align:center; color:red;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
-                });
-        }
-
-        document.getElementById('chargeForm').addEventListener('submit', e => {
-            e.preventDefault();
-            sendForm({
-                type: 'charge',
-                location: document.getElementById('charge_location').value,
-                odometer: document.getElementById('charge_odometer').value,
-                rate: document.getElementById('charge_rate').value,
-                battery: document.getElementById('charge_battery').value,
-                energy: document.getElementById('charge_energy').value,
-                cost: document.getElementById('charge_cost').value
-            }, document.getElementById('chargeForm'));
         });
-
-        document.getElementById('maintenanceForm').addEventListener('submit', e => {
-            e.preventDefault();
-            sendForm({
-                type: 'maintenance',
-                serviceType: document.getElementById('m_serviceType').value,
-                odometer: document.getElementById('m_odometer').value,
-                details: document.getElementById('m_details').value,
-                cost: document.getElementById('m_cost').value
-            }, document.getElementById('maintenanceForm'));
-        });
-
-        function sendForm(payload, formElement) {
-            fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(() => {
-                alert('บันทึกข้อมูลเรียบร้อย!');
-                formElement.reset();
-                setTimeout(() => location.reload(), 1000);
-            })
-            .catch(err => alert('เกิดข้อผิดพลาด กรุณาลองใหม่'));
-        }
     </script>
 </body>
 </html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVOLVE - บันทึกการบำรุงรักษา</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7f5;
+            --primary-green: #2e7d32;
+            --accent-green: #81c784;
+            --card-bg: #ffffff;
+            --text-dark: #1b5e20;
+            --text-light: #555555;
+            --shadow: 0 8px 20px rgba(46, 125, 50, 0.1);
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .main-container { width: 100%; max-width: 420px; }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-green), var(--accent-green));
+            border-radius: 30px;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .app-header h1 { font-size: 28px; margin: 0; }
+        .app-header p { font-size: 14px; opacity: 0.9; margin: 5px 0 0; }
+
+        .nav-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.35);
+            padding: 6px;
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+            font-family: 'Kanit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            border-radius: 14px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-green);
+            color: white;
+            border: 1px solid transparent;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .input-group { margin-bottom: 18px; }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-icon { color: var(--accent-green); font-size: 20px !important; }
+
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 16px;
+            font-family: 'Kanit', sans-serif;
+            color: var(--text-dark);
+            box-sizing: border-box;
+            background: #fafafa;
+            outline: none;
+        }
+
+        .input-group textarea { resize: vertical; height: 80px; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--primary-green); background: #fff; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Kanit', sans-serif;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .history-section { margin-top: 25px; border-top: 2px dashed #e0e0e0; padding-top: 20px; }
+        .log-item {
+            background: #f9faf9;
+            border: 1px solid #e2e8e4;
+            padding: 12px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .log-item b { color: var(--primary-green); }
+        .log-date { font-size: 11px; color: #888; margin-bottom: 4px; }
+    </style>
+    <script src="modal-system.js"></script>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="app-header">
+            <h1>EVOLVE</h1>
+            <p>บันทึกประวัติการบำรุงรักษารถ</p>
+        </div>
+
+        <div class="nav-bar">
+            <a href="index.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">dashboard</span> หน้าแรก</a>
+            <a href="charge.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">bolt</span> ชาร์จไฟ</a>
+            <a href="maintenance.html" class="nav-btn active"><span class="material-icons-round" style="font-size: 16px;">build</span> บำรุงรักษา</a>
+        </div>
+
+        <div class="card">
+            <form id="maintenanceForm">
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">event</span>วันที่และเวลาที่ทำรายการ</label>
+                    <input type="datetime-local" id="m_timestamp" required>
+                </div>
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">build</span>ประเภทการบำรุงรักษา</label>
+                    <select id="m_serviceType" required>
+                        <option value="" disabled selected>-- กรุณาเลือกรายการบำรุงรักษา --</option>
+                        <option value="เช็กระยะตามกำหนด">เช็กระยะตามกำหนด</option>
+                        <option value="เปลี่ยนยาง / สลับยาง">เปลี่ยนยาง / สลับยาง</option>
+                        <option value="เปลี่ยนไส้กรองแอร์">เปลี่ยนไส้กรองแอร์</option>
+                        <option value="เปลี่ยนใบปัดน้ำฝน">เปลี่ยนใบปัดน้ำฝน</option>
+                        <option value="ตรวจสอบระบบเบรก">ตรวจสอบระบบเบรก</option>
+                        <option value="อื่นๆ (ระบุในรายละเอียด)">อื่นๆ (ระบุในรายละเอียด)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">speed</span>เลขไมล์ตอนทำรายการ (กม.)</label>
+                    <input type="number" id="m_odometer" required placeholder="กำลังโหลด..." inputmode="numeric">
+                </div>
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">description</span>รายละเอียดเพิ่มเติม</label>
+                    <textarea id="m_details" placeholder="เช่น เปลี่ยนยาง 4 เส้น"></textarea>
+                </div>
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">payments</span>ค่าใช้จ่ายทั้งหมด (บาท)</label>
+                    <input type="number" id="m_cost" required placeholder="เช่น 4500" step="0.25" inputmode="numeric">
+                </div>
+                <button type="submit" class="submit-btn" id="mBtn">
+                    <span class="material-icons-round">save</span> บันทึกการบำรุงรักษา
+                </button>
+            </form>
+
+            <div class="history-section">
+                <h3 style="margin: 0 0 12px 0; color: var(--text-dark); font-size: 16px;">📜 ประวัติการบำรุงรักษาล่าสุด</h3>
+                <div id="historyList">กำลังโหลดประวัติ...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyYmQvXMvscXow8RKurwkf8qrEM9awDwQD9fQ3dymNGV3dQxQ6CKUr3HX1J1bBlUSUj/exec';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('m_timestamp').value = now.toISOString().slice(0, 16);
+
+            fetch(scriptURL + '?action=getLastOdometer')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.lastOdometer) {
+                        document.getElementById('m_odometer').placeholder = `ล่าสุด: ${data.lastOdometer} กม.`;
+                    }
+                });
+
+            loadMaintenanceHistory();
+        });
+
+        function loadMaintenanceHistory() {
+            const historyList = document.getElementById('historyList');
+            fetch(scriptURL + '?action=getMaintenanceLog')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.data.length > 0) {
+                        const sortedLogs = [...data.data].sort((a, b) => new Date(b[0]) - new Date(a[0]));
+                        let html = '';
+                        sortedLogs.slice(0, 3).forEach(row => {
+                            let dateStr = new Date(row[0]).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                            html += `<div class="log-item">
+                                <div class="log-date">📅 ${dateStr}</div>
+                                🛠️ บริการ: <b>${row[1]}</b> | ไมล์: ${row[2]} กม. | 💰 <b>${row[4]} บาท</b>
+                            </div>`;
+                        });
+                        historyList.innerHTML = html;
+                    } else {
+                        historyList.innerHTML = '<p style="text-align:center; color:#888; font-size:13px;">ยังไม่มีประวัติการบำรุงรักษา</p>';
+                    }
+                })
+                .catch(() => { historyList.innerHTML = '<p style="text-align:center; color:red; font-size:13px;">โหลดข้อมูลไม่สำเร็จ</p>'; });
+        }
+
+       document.getElementById('maintenanceForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const payload = {
+                type: 'maintenance',
+                timestamp: document.getElementById('m_timestamp').value,
+                serviceType: document.getElementById('m_serviceType').value,
+                odometer: document.getElementById('m_odometer').value,
+                details: document.getElementById('m_details').value,
+                cost: document.getElementById('m_cost').value
+            };
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                // ใช้ .then() ต่อ เพื่อรอให้ผู้ใช้กดปุ่ม "ตกลง" บนป๊อปอัปก่อน ค่อยเคลียร์ฟอร์มและรีโหลด
+                showCustomAlert('สำเร็จ', 'บันทึกการบำรุงรักษาเรียบร้อย!', '✅').then(() => {
+                    e.target.reset();
+                    setTimeout(() => location.reload(), 1000);
+                });
+            }).catch(() => {
+                showCustomAlert('ข้อผิดพลาด', 'เกิดข้อผิดพลาด กรุณาลองใหม่', '❌');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVOLVE - บันทึกการชาร์จไฟ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7f5;
+            --primary-green: #2e7d32;
+            --accent-green: #81c784;
+            --card-bg: #ffffff;
+            --text-dark: #1b5e20;
+            --text-light: #555555;
+            --shadow: 0 8px 20px rgba(46, 125, 50, 0.1);
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .main-container { width: 100%; max-width: 420px; }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-green), var(--accent-green));
+            border-radius: 30px;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .app-header h1 { font-size: 28px; margin: 0; }
+        .app-header p { font-size: 14px; opacity: 0.9; margin: 5px 0 0; }
+
+        .nav-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.35);
+            padding: 6px;
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+            font-family: 'Kanit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            border-radius: 14px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-green);
+            color: white;
+            border: 1px solid transparent;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .input-group { margin-bottom: 18px; }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-icon { color: var(--accent-green); font-size: 20px !important; }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 16px;
+            font-family: 'Kanit', sans-serif;
+            color: var(--text-dark);
+            box-sizing: border-box;
+            background: #fafafa;
+            outline: none;
+        }
+
+        .input-group input:focus { border-color: var(--primary-green); background: #fff; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Kanit', sans-serif;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .history-section { margin-top: 25px; border-top: 2px dashed #e0e0e0; padding-top: 20px; }
+        .log-item {
+            background: #f9faf9;
+            border: 1px solid #e2e8e4;
+            padding: 12px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .log-item b { color: var(--primary-green); }
+        .log-date { font-size: 11px; color: #888; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="app-header">
+            <h1>EVOLVE</h1>
+            <p>บันทึกข้อมูลการชาร์จพลังงานไฟฟ้า</p>
+        </div>
+
+        <div class="nav-bar">
+            <a href="index.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">dashboard</span> หน้าแรก</a>
+            <a href="charge.html" class="nav-btn active"><span class="material-icons-round" style="font-size: 16px;">bolt</span> ชาร์จไฟ</a>
+            <a href="maintenance.html" class="nav-btn"><span class="material-icons-round" style="font-size: 16px;">build</span> บำรุงรักษา</a>
+        </div>
+
+        <div class="card">
+            <form id="chargeForm">
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">event</span>วันที่และเวลาที่ชาร์จ</label>
+                    <input type="datetime-local" id="charge_timestamp" required>
+                </div>
+                <div class="input-group">
+                    <label>เลือกสถานีชาร์จ (Charging Station)</label>
+                    <select id="stationSelect" onchange="onStationSelected()" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #e0e0e0; font-family: 'Kanit', sans-serif;">
+                        <option value="" disabled selected>-- กำลังโหลดรายชื่อสถานีจากระบบ... --</option>
+                    </select>
+                </div>
+
+                <!-- ซ่อนค่าพิกัดและชื่อสถานที่ไว้เตรียมส่งหลังบ้าน -->
+                <input type="hidden" id="locationName" name="locationName">
+                <input type="hidden" id="latitude" name="latitude">
+                <input type="hidden" id="longitude" name="longitude">
+
+                
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">speed</span>เลขไมล์สะสมปัจจุบัน (กม.)</label>
+                    <input type="number" id="charge_odometer" required placeholder="กำลังโหลด..." inputmode="numeric">
+                </div>
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">local_offer</span>อัตราค่าชาร์จ (บาท/kWh)</label>
+                    <input type="number" id="charge_rate" step="0.1" placeholder="เช่น 6.9" inputmode="decimal">
+                </div>
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">battery_charging_full</span>แบตเตอรี่หลังชาร์จ (%)</label>
+                    <input type="number" id="charge_battery" required placeholder="เช่น 80" min="0" max="100" inputmode="numeric">
+                </div>
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">payments</span>ค่าใช้จ่ายทั้งหมด (บาท)</label>
+                    <input type="number" id="charge_cost" required placeholder="เช่น 250" step="0.1" inputmode="numeric">
+                </div>
+                <div class="input-group">
+                    <label><span class="material-icons-round input-icon">bolt</span>ปริมาณไฟฟ้าที่ชาร์จ (kWh)</label>
+                    <input type="number" id="charge_energy" required placeholder="เช่น 45.5" step="0.01" inputmode="decimal">
+                    <div id="energyHint" style="font-size: 13px; color: #9e9e9e; margin-top: 5px; font-style: italic;"></div>
+                </div>
+                <button type="submit" class="submit-btn" id="chargeBtn">
+                    <span class="material-icons-round">save</span> บันทึกข้อมูลการชาร์จ
+                </button>
+            </form>
+
+            <div class="history-section">
+                <h3 style="margin: 0 0 12px 0; color: var(--text-dark); font-size: 16px;">📜 ประวัติการชาร์จล่าสุด</h3>
+                <div id="historyList">กำลังโหลดประวัติ...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyYmQvXMvscXow8RKurwkf8qrEM9awDwQD9fQ3dymNGV3dQxQ6CKUr3HX1J1bBlUSUj/exec';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // 1. ตั้งเวลาปัจจุบัน
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('charge_timestamp').value = now.toISOString().slice(0, 16);
+
+            // 2. ดึงเลขไมล์ล่าสุด
+            fetch(scriptURL + '?action=getLastOdometer')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.lastOdometer) {
+                        document.getElementById('charge_odometer').placeholder = `ล่าสุด: ${data.lastOdometer} กม.`;
+                    }
+                });
+
+            loadChargeHistory();
+
+            // 3. ดึงรายชื่อสถานีมาใส่ Dropdown
+            fetch(scriptURL + '?action=getStations') 
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('stationSelect');
+                    select.innerHTML = '<option value="" disabled selected>-- กรุณาเลือกสถานีชาร์จ --</option>';
+                    
+                    data.forEach(station => {
+                        let option = document.createElement('option');
+                        option.value = station.name;
+                        option.textContent = station.name;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading stations:', error);
+                    document.getElementById('stationSelect').innerHTML = '<option value="" disabled selected>-- โหลดรายชื่อสถานีไม่สำเร็จ --</option>';
+                });
+        });   
+
+        // เมื่อผู้ใช้เลือกสถานี ให้นำชื่อไปเก็บไว้ในช่อง hidden
+        function onStationSelected() {
+            const select = document.getElementById('stationSelect');
+            document.getElementById('locationName').value = select.value;
+        }
+
+        function calculateExpectedEnergy() {
+            const cost = parseFloat(document.getElementById('charge_cost').value);
+            const rate = parseFloat(document.getElementById('charge_rate').value);
+            const hintDiv = document.getElementById('energyHint');
+            if (cost > 0 && rate > 0) {
+                hintDiv.innerText = `💡 คำนวณจากค่าใช้จ่ายควรได้ไฟประมาณ: ${(cost / rate).toFixed(2)} kWh`;
+            } else {
+                hintDiv.innerText = '';
+            }
+        }
+        document.getElementById('charge_cost').addEventListener('input', calculateExpectedEnergy);
+        document.getElementById('charge_rate').addEventListener('input', calculateExpectedEnergy);
+
+        let currentChargeLimit = 10; // กำหนดค่าเริ่มต้นให้แสดง 10 รายการ
+        let cachedChargeLogs = [];  // ตัวแปรเก็บข้อมูลดิบไว้ชั่วคราว
+
+        function loadChargeHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            // ถ้ายังไม่มีข้อมูลในแคช ให้ไปดึงจาก Server มาก่อน
+            if (cachedChargeLogs.length === 0) {
+                fetch(scriptURL + '?action=getChargeLog')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.data.length > 0) {
+                            cachedChargeLogs = [...data.data].sort((a, b) => new Date(b[0]) - new Date(a[0]));
+                            renderChargeList(); // เรียกฟังก์ชันวาดหน้าจอ
+                        } else {
+                            historyList.innerHTML = '<p style="text-align:center; color:#888; font-size:13px;">ยังไม่มีประวัติการชาร์จ</p>';
+                        }
+                    })
+                    .catch(() => { historyList.innerHTML = '<p style="text-align:center; color:red; font-size:13px;">โหลดข้อมูลไม่สำเร็จ</p>'; });
+            } else {
+                renderChargeList();
+            }
+        }
+
+        // ฟังก์ชันสำหรับวาดรายการลงในหน้าเว็บ
+        function renderChargeList() {
+            const historyList = document.getElementById('historyList');
+            let html = '';
+            
+            // ตัดข้อมูลมาแสดงตามจำนวนจำกัด (เช่น 10, 20, 30...)
+            const visibleLogs = cachedChargeLogs.slice(0, currentChargeLimit);
+            
+            visibleLogs.forEach(row => {
+                let dateStr = new Date(row[0]).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                html += `<div class="log-item" style="background:white; padding:12px; margin-bottom:8px; border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.05); font-size:14px;">
+                    <div class="log-date" style="color:#2e7d32; font-weight:600; margin-bottom:4px;">📅 ${dateStr}</div>
+                    📍 สถานี: <b>${row[1]}</b> | ⚡ ${row[5]} kWh | 💰 <b>${row[6]} บาท</b>
+                </div>`;
+            });
+
+            // ถ้ายังมีข้อมูลเหลือให้แสดงเพิ่ม ให้ใส่ปุ่ม "โหลดเพิ่ม" ต่อท้าย
+            if (currentChargeLimit < cachedChargeLogs.length) {
+                html += `
+                    <button onclick="loadMoreCharge()" style="width:100%; padding:10px; background:#f1f3f2; color:#333; border:none; border-radius:10px; font-family:'Kanit',sans-serif; font-weight:600; cursor:pointer; margin-top:10px;">
+                        ดูเพิ่มเติมอีก (เหลืออีก ${cachedChargeLogs.length - currentChargeLimit} รายการ) 👇
+                    </button>
+                `;
+            }
+
+            historyList.innerHTML = html;
+        }
+
+        // ฟังก์ชันเมื่อกดปุ่ม "โหลดเพิ่ม"
+        function loadMoreCharge() {
+            currentChargeLimit += 10; // เพิ่มโควตาครั้งละ 10
+            renderChargeList();        // วาดหน้าจอใหม่
+        }
+        // ส่งข้อมูลบันทึกการชาร์จ
+        document.getElementById('chargeForm').addEventListener('submit', e => {
+            e.preventDefault();
+            
+            const payload = {
+                type: 'charge',
+                timestamp: document.getElementById('charge_timestamp').value,
+                location: document.getElementById('locationName').value,
+                odometer: document.getElementById('charge_odometer').value,
+                rate: document.getElementById('charge_rate').value,
+                battery: document.getElementById('charge_battery').value,
+                energy: document.getElementById('charge_energy').value,
+                cost: document.getElementById('charge_cost').value
+            };
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                alert('บันทึกข้อมูลการชาร์จเรียบร้อย!');
+                e.target.reset();
+                setTimeout(() => location.reload(), 1000);
+            }).catch(() => alert('เกิดข้อผิดพลาด กรุณาลองใหม่'));
+        });
+    </script>
+</body>
+</html>

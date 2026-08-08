@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVOLVE - Environmental Tracking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7f5;
+            --primary-green: #2e7d32;
+            --accent-green: #81c784;
+            --card-bg: #ffffff;
+            --text-dark: #1b5e20;
+            --text-light: #555555;
+            --shadow: 0 8px 20px rgba(46, 125, 50, 0.1);
+        }
+
+        body { font-family: 'Kanit', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        .main-container { width: 100%; max-width: 420px; box-sizing: border-box; }
+        .app-header { text-align: center; margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, var(--primary-green), var(--accent-green)); border-radius: 30px; color: white; box-shadow: var(--shadow); }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 30px; box-shadow: var(--shadow); margin-bottom: 20px; }
+        h2 { font-size: 17px; color: var(--text-dark); margin-top: 0; display: flex; align-items: center; gap: 8px; }
+        .btn { width: 100%; padding: 14px; background: var(--primary-green); color: white; border: none; border-radius: 15px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .result-box { background: #f9faf9; border-radius: 15px; padding: 15px; margin-top: 15px; font-size: 13px; color: var(--text-light); border-left: 4px solid var(--accent-green); line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="app-header">
+            <h1>EVOLVE</h1>
+            <p>ระบบติดตามสภาพแวดล้อมอัตโนมัติ</p>
+        </div>
+
+        <div class="card">
+            <h2><span class="material-icons-round" style="color: var(--primary-green);">sensors</span> Real-time Environmental Data</h2>
+            <button class="btn" onclick="startTracking()">
+                <span class="material-icons-round">my_location</span> เริ่มต้นดึงข้อมูลพิกัดและอากาศ
+            </button>
+
+            <div id="resultBox" class="result-box" style="display: none;">
+                กำลังเตรียมระบบติดตาม...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // กำหนดค่า API Key เป็นค่าคงที่
+        const API_KEY = "dd327138824e53156d79f1e11072a001";
+
+        async function startTracking() {
+            const resultBox = document.getElementById('resultBox');
+            resultBox.style.display = 'block';
+            resultBox.innerHTML = '⏳ กำลังระบุตำแหน่งพิกัดปัจจุบัน...';
+
+            if (!navigator.geolocation) {
+                resultBox.innerHTML = '❌ อุปกรณ์ไม่รองรับระบบ GPS';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    try {
+                        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=th&appid=${API_KEY}`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            resultBox.innerHTML = `
+                                📍 <b>สถานที่:</b> ${data.name || 'พิกัดปัจจุบัน'}<br>
+                                🌐 <b>พิกัด:</b> ${lat.toFixed(4)}, ${lon.toFixed(4)}<br>
+                                🌡️ <b>อุณหภูมิ:</b> <b>${data.main.temp}°C</b> (รู้สึกเหมือน ${data.main.feels_like}°C)<br>
+                                💧 <b>ความชื้น:</b> ${data.main.humidity}%<br>
+                                ☁️ <b>สภาพอากาศ:</b> ${data.weather[0].description}<br>
+                                ⏱️ <b>อัปเดตเมื่อ:</b> ${new Date().toLocaleTimeString('th-TH')}
+                            `;
+                        } else {
+                            resultBox.innerHTML = `❌ ระบบพยากรณ์อากาศแจ้งข้อผิดพลาด: ${data.message}`;
+                        }
+                    } catch (error) {
+                        resultBox.innerHTML = `❌ เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย`;
+                    }
+                },
+                (error) => { resultBox.innerHTML = '❌ ไม่สามารถดึงพิกัดได้ (กรุณาอนุญาตสิทธิ์ตำแหน่ง)'; },
+                { enableHighAccuracy: true }
+            );
+        }
+    </script>
+</body>
+</html>
